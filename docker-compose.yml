@@ -1,0 +1,135 @@
+# Tender Platform — Docker Compose
+# Run: docker compose up -d
+
+version: "3.9"
+
+services:
+  # ============================================================
+  # PostgreSQL 16
+  # ============================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: tp_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tender_platform
+      POSTGRES_USER: tp_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tp_secret_2026}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/01_init.sql
+      - ./backend/init_test_db.sql:/docker-entrypoint-initdb.d/00_test_db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tp_user -d tender_platform"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================
+  # Redis 7
+  # ============================================================
+  redis:
+    image: redis:7-alpine
+    container_name: tp_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================
+  # Meilisearch
+  # ============================================================
+  meilisearch:
+    image: getmeili/meilisearch:v1.12
+    container_name: tp_meilisearch
+    restart: unless-stopped
+    environment:
+      MEILI_ENV: development
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-tp_meili_key_2026}
+      MEILI_NO_ANALYTICS: "true"
+    ports:
+      - "7700:7700"
+    volumes:
+      - meili_data:/meili_data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7700/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================
+  # FastAPI Backend
+  # ============================================================
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tp_api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://tp_user:${POSTGRES_PASSWORD:-tp_secret_2026}@postgres:5432/tender_platform
+      REDIS_URL: redis://redis:6379/0
+      MEILI_URL: http://meilisearch:7700
+      MEILI_KEY: ${MEILI_MASTER_KEY:-tp_meili_key_2026}
+      SECRET_KEY: ${SECRET_KEY:-change_me_in_production}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      meilisearch:
+        condition: service_healthy
+    volumes:
+      - ./backend/app:/app/app  # Hot reload in dev
+
+  # ============================================================
+  # Celery Worker (Parsers)
+  # ============================================================
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tp_celery_worker
+    restart: unless-stopped
+    command: celery -A app.celery_app worker --loglevel=info --concurrency=2
+    environment:
+      DATABASE_URL: postgresql+asyncpg://tp_user:${POSTGRES_PASSWORD:-tp_secret_2026}@postgres:5432/tender_platform
+      REDIS_URL: redis://redis:6379/0
+      MEILI_URL: http://meilisearch:7700
+      MEILI_KEY: ${MEILI_MASTER_KEY:-tp_meili_key_2026}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # ============================================================
+  # Celery Beat (Scheduler)
+  # ============================================================
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tp_celery_beat
+    restart: unless-stopped
+    command: celery -A app.celery_app beat --loglevel=info
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
+  meili_data:

@@ -1,0 +1,58 @@
+name: tender_platform
+description: Агрегатор тендерных площадок — все закупки в одном окне
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Navigation
+  go_router: ^14.0.0
+
+  # State management
+  flutter_riverpod: ^2.5.0
+  riverpod_annotation: ^2.3.0
+
+  # HTTP
+  dio: ^5.4.0
+
+  # UI
+  flutter_svg: ^2.0.9
+  shimmer: ^3.0.0
+  cached_network_image: ^3.3.1
+  
+  # Utils
+  intl: ^0.19.0
+  url_launcher: ^6.2.0
+  shared_preferences: ^2.2.0
+  
+  # Icons
+  lucide_icons: ^0.257.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  build_runner: ^2.4.0
+  riverpod_generator: ^2.4.0
+
+flutter:
+  uses-material-design: true
+  
+  fonts:
+    - family: Outfit
+      fonts:
+        - asset: assets/fonts/Outfit-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Outfit-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Outfit-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Outfit-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Outfit-ExtraBold.ttf
+          weight: 800
