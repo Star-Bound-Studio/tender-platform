@@ -96,6 +96,24 @@ async def seed():
     factory = async_sessionmaker(engine, expire_on_commit=False)
 
     async with factory() as session:
+        # ---- SOURCES (must be first) ----
+        print("Seeding sources...")
+        from app.models.database import Source
+        sources_data = [
+            Source(id="eis", name="ЕИС (zakupki.gov.ru)", short_name="ЕИС", source_type="eis", base_url="https://zakupki.gov.ru", color="#3b82f6", parse_method="ftp_xml", parse_frequency="every_2h"),
+            Source(id="rts", name="РТС-тендер", short_name="РТС", source_type="rts", base_url="https://rts-tender.ru", color="#22c55e", parse_method="scrapy_json", parse_frequency="twice_daily"),
+            Source(id="sber", name="Сбербанк-АСТ", short_name="Сбер-АСТ", source_type="sber", base_url="https://sberbank-ast.ru", color="#f59e0b", parse_method="scrapy_html", parse_frequency="twice_daily"),
+            Source(id="rosneft", name="Роснефть", short_name="Роснефть", source_type="corp", base_url="https://tenders.rosneft.ru", color="#a855f7", parse_method="scrapy_html", parse_frequency="daily"),
+            Source(id="gazprom", name="Газпром", short_name="Газпром", source_type="corp", base_url="https://zakupki.gazprom.ru", color="#8b5cf6", parse_method="scrapy_html", parse_frequency="daily"),
+            Source(id="lukoil", name="ЛУКОЙЛ", short_name="ЛУКОЙЛ", source_type="corp", base_url="https://lukoil.ru", color="#7c3aed", parse_method="scrapy_html", parse_frequency="daily"),
+            Source(id="vsem_podryad", name="Всем Подряд", short_name="Субподряды", source_type="sub", base_url="https://vsem-podryad.ru", color="#ec4899", parse_method="scrapy_html", parse_frequency="daily"),
+        ]
+        for s in sources_data:
+            session.add(s)
+        await session.commit()
+        print(f"  {len(sources_data)} sources loaded")
+
+        # ---- OKVED CODES ----
         print("Seeding OKVED codes...")
         for code, name, parent, level in OKVEDS:
             section = code if len(code) == 1 else code.split(".")[0] if "." not in code and len(code) <= 2 else None
