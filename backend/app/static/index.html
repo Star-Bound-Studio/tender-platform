@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tender Platform — Агрегатор тендерных площадок</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#06080f;--bg2:#0c1120;--card:#111827;--border:#1e293b;
+  --accent:#00d4aa;--accent2:#00b894;--glow:rgba(0,212,170,.12);
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --blue:#3b82f6;--green:#22c55e;--amber:#f59e0b;--purple:#a855f7;--pink:#ec4899;--red:#ef4444;
+}
+body{background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;overflow-x:hidden;line-height:1.6}
+a{color:var(--accent);text-decoration:none}
+
+/* ═══ NAV ═══ */
+nav{position:fixed;top:0;width:100%;z-index:100;backdrop-filter:blur(20px);background:rgba(6,8,15,.8);border-bottom:1px solid var(--border);padding:0 24px}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:-.5px}
+.logo-icon{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--accent),#00896e);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;font-family:'JetBrains Mono',monospace}
+.nav-links{display:flex;gap:28px;font-size:14px;font-weight:500;color:var(--text2)}
+.nav-links a:hover{color:var(--accent)}
+.nav-cta{background:var(--accent);color:var(--bg);padding:8px 18px;border-radius:6px;font-weight:700;font-size:13px;transition:.2s}
+.nav-cta:hover{background:var(--accent2);transform:translateY(-1px)}
+
+/* ═══ HERO ═══ */
+.hero{min-height:100vh;display:flex;align-items:center;padding:100px 24px 60px;position:relative}
+.hero::before{content:'';position:absolute;top:-20%;right:-10%;width:700px;height:700px;background:radial-gradient(circle,rgba(0,212,170,.06),transparent 70%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+.hero-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1.1fr .9fr;gap:60px;align-items:center;width:100%}
+.hero h1{font-size:clamp(36px,5vw,56px);font-weight:800;line-height:1.08;letter-spacing:-2px;margin-bottom:20px}
+.hero h1 span{background:linear-gradient(135deg,var(--accent),#00e6b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{font-size:17px;color:var(--text2);line-height:1.7;max-width:480px;margin-bottom:32px}
+.hero-badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+.badge{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--card);color:var(--text2)}
+.badge .dot{width:7px;height:7px;border-radius:50%}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap}
+.btn{padding:12px 24px;border-radius:8px;font-weight:700;font-size:14px;border:none;cursor:pointer;transition:.2s;font-family:inherit}
+.btn-primary{background:var(--accent);color:var(--bg)}.btn-primary:hover{background:var(--accent2);transform:translateY(-1px)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text2)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+
+/* Hero stats panel */
+.stats-panel{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;position:relative;overflow:hidden}
+.stats-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--accent),var(--amber),var(--purple),var(--pink))}
+.stats-panel h3{font-size:13px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:20px}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.stat{background:var(--bg2);border-radius:10px;padding:16px}
+.stat-value{font-size:28px;font-weight:800;font-family:'JetBrains Mono',monospace;color:var(--accent)}
+.stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.source-list{display:flex;flex-direction:column;gap:8px}
+.source-row{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:8px;background:var(--bg2);font-size:13px}
+.source-row .name{display:flex;align-items:center;gap:8px;font-weight:600}
+.source-row .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.source-row .count{font-family:'JetBrains Mono',monospace;color:var(--accent);font-weight:700;font-size:12px}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;display:inline-block;margin-right:6px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ═══ SECTIONS ═══ */
+section{padding:80px 24px}
+.section-inner{max-width:1200px;margin:0 auto}
+.section-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--accent);margin-bottom:8px}
+.section-title{font-size:clamp(28px,4vw,40px);font-weight:800;letter-spacing:-1px;margin-bottom:12px}
+.section-sub{font-size:16px;color:var(--text2);max-width:560px;margin-bottom:40px}
+
+/* Features */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.feature{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px;transition:.3s;position:relative;overflow:hidden}
+.feature:hover{border-color:rgba(0,212,170,.3);transform:translateY(-2px)}
+.feature.highlighted{border-color:rgba(0,212,170,.25);background:linear-gradient(135deg,rgba(0,212,170,.05),var(--card))}
+.feature-icon{width:44px;height:44px;border-radius:10px;background:var(--glow);display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:20px}
+.feature h3{font-size:17px;font-weight:700;margin-bottom:6px}
+.feature p{font-size:13px;color:var(--text2);line-height:1.6}
+
+/* Tenders live */
+.tenders-section{background:var(--bg2)}
+.tender-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.tender-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;transition:.2s}
+.tender-card:hover{border-color:rgba(0,212,170,.3)}
+.tender-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.tender-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);font-weight:700}
+.tender-src{padding:3px 10px;border-radius:4px;font-size:10px;font-weight:700;color:#fff}
+.tender-title{font-size:14px;font-weight:600;line-height:1.4;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tender-customer{font-size:11px;color:var(--text3);margin-bottom:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tender-footer{display:flex;gap:20px;padding-top:12px;border-top:1px solid var(--border)}
+.tender-meta{display:flex;flex-direction:column}
+.tender-meta-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.3px}
+.tender-meta-value{font-size:13px;font-weight:700}
+
+/* Companies */
+.company-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.company-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;transition:.2s}
+.company-card:hover{border-color:rgba(0,212,170,.3)}
+.company-name{font-size:15px;font-weight:700;margin-bottom:4px}
+.company-okved{font-size:12px;color:var(--text3);margin-bottom:12px}
+.company-stats{display:flex;gap:16px}
+.company-stat{display:flex;flex-direction:column;align-items:center;background:var(--bg2);border-radius:8px;padding:10px 14px}
+.company-stat-val{font-size:18px;font-weight:800;color:var(--accent);font-family:'JetBrains Mono',monospace}
+.company-stat-lbl{font-size:9px;color:var(--text3);text-transform:uppercase}
+.sro-badge{background:rgba(0,212,170,.15);color:var(--accent);padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;margin-left:8px}
+
+/* CTA */
+.cta-section{text-align:center}
+.cta-box{background:linear-gradient(135deg,rgba(0,212,170,.08),rgba(59,130,246,.06));border:1px solid rgba(0,212,170,.2);border-radius:20px;padding:60px 40px;max-width:700px;margin:0 auto}
+.cta-box h2{font-size:32px;font-weight:800;letter-spacing:-1px;margin-bottom:12px}
+.cta-box p{color:var(--text2);margin-bottom:28px;font-size:15px}
+
+/* Footer */
+footer{border-top:1px solid var(--border);padding:40px 24px;text-align:center;color:var(--text3);font-size:13px}
+
+/* Loading skeleton */
+.skeleton{background:linear-gradient(90deg,var(--bg2) 25%,rgba(30,41,59,.5) 50%,var(--bg2) 75%);background-size:200%;animation:shimmer 1.5s infinite;border-radius:8px;height:200px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* Responsive */
+@media(max-width:768px){
+  .hero-inner{grid-template-columns:1fr;gap:40px}
+  .nav-links{display:none}
+  .features-grid,.tender-cards,.company-cards{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <div class="logo"><div class="logo-icon">TP</div> Tender Platform</div>
+    <div class="nav-links">
+      <a href="#features">Возможности</a>
+      <a href="#tenders">Тендеры</a>
+      <a href="#companies">Компании</a>
+      <a href="#sources">Площадки</a>
+    </div>
+    <a href="/docs" class="nav-cta">API Docs →</a>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <h1>Все тендеры России<br>в <span>одном окне</span></h1>
+      <p>Агрегатор тендерных площадок: ЕИС, РТС-тендер, Сбербанк-АСТ, корпоративные закупки и субподряды. Справочник компаний из ЕГРЮЛ.</p>
+      <div class="hero-badges">
+        <div class="badge"><div class="dot" style="background:var(--blue)"></div>ЕИС</div>
+        <div class="badge"><div class="dot" style="background:var(--green)"></div>РТС-тендер</div>
+        <div class="badge"><div class="dot" style="background:var(--amber)"></div>Сбербанк-АСТ</div>
+        <div class="badge"><div class="dot" style="background:var(--purple)"></div>Корпоративные</div>
+        <div class="badge"><div class="dot" style="background:var(--pink)"></div>Субподряды</div>
+      </div>
+      <div class="hero-btns">
+        <a href="/docs" class="btn btn-primary">Открыть API →</a>
+        <a href="/api/v1/tenders" class="btn btn-outline">Тендеры JSON</a>
+      </div>
+    </div>
+    <div class="stats-panel">
+      <h3><span class="live-dot"></span> Статистика платформы</h3>
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-value" id="s-tenders">—</div><div class="stat-label">Тендеров</div></div>
+        <div class="stat"><div class="stat-value" id="s-companies">—</div><div class="stat-label">Компаний</div></div>
+        <div class="stat"><div class="stat-value" id="s-sources">—</div><div class="stat-label">Площадок</div></div>
+        <div class="stat"><div class="stat-value" id="s-requests">—</div><div class="stat-label">Заявок</div></div>
+      </div>
+      <div class="source-list" id="source-list"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FEATURES ═══ -->
+<section id="features">
+  <div class="section-inner">
+    <div class="section-label">Возможности</div>
+    <div class="section-title">6 модулей в одной платформе</div>
+    <div class="section-sub">Всё что нужно подрядчику для поиска заказов и проверки контрагентов</div>
+    <div class="features-grid">
+      <div class="feature highlighted"><div class="feature-icon">📋</div><h3>Агрегатор тендеров</h3><p>Закупки с 7 площадок: ЕИС (44-ФЗ, 223-ФЗ), РТС-тендер, Сбербанк-АСТ, Роснефть, Газпром, субподряды. Фильтры по НМЦ, региону, ОКВЭД.</p></div>
+      <div class="feature"><div class="feature-icon">🏢</div><h3>Справочник компаний</h3><p>Карточки из ЕГРЮЛ: реквизиты, финансы за 2 года, допуски СРО, арбитраж, тендерная история. Проверка контрагентов.</p></div>
+      <div class="feature highlighted"><div class="feature-icon">📝</div><h3>Заявки на субподряд</h3><p>Прямые заказы от генподрядчиков. Разместите заявку бесплатно — электромонтаж, фасады, бурение, строительство.</p></div>
+      <div class="feature"><div class="feature-icon">🗺️</div><h3>Карта регионов</h3><p>Компании и тендеры на интерактивной карте РФ. Лицензионные участки недропользования.</p></div>
+      <div class="feature"><div class="feature-icon">🛒</div><h3>Маркетплейс</h3><p>Оборудование, спецтехника, стройматериалы от проверенных поставщиков с рейтингом.</p></div>
+      <div class="feature"><div class="feature-icon">🔍</div><h3>Умный поиск</h3><p>Мгновенный поиск за &lt;20мс через Meilisearch. Push-уведомления о новых тендерах по вашим ОКВЭД.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TENDERS ═══ -->
+<section class="tenders-section" id="tenders">
+  <div class="section-inner">
+    <div class="section-label">Живые данные</div>
+    <div class="section-title">Последние тендеры</div>
+    <div class="section-sub">Данные загружаются в реальном времени из API</div>
+    <div class="tender-cards" id="tender-cards">
+      <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COMPANIES ═══ -->
+<section id="companies">
+  <div class="section-inner">
+    <div class="section-label">Справочник</div>
+    <div class="section-title">Компании из ЕГРЮЛ</div>
+    <div class="section-sub">Финансы, СРО, тендерная история — всё в одной карточке</div>
+    <div class="company-cards" id="company-cards">
+      <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SOURCES ═══ -->
+<section class="tenders-section" id="sources">
+  <div class="section-inner" style="text-align:center">
+    <div class="section-label">Источники</div>
+    <div class="section-title">7 площадок в одном агрегаторе</div>
+    <div class="section-sub" style="margin:0 auto 40px">Данные обновляются автоматически. Каждый тендер имеет прямую ссылку на оригинал.</div>
+    <div id="sources-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;max-width:900px;margin:0 auto"></div>
+  </div>
+</section>
+
+<!-- ═══ CTA ═══ -->
+<section class="cta-section">
+  <div class="section-inner">
+    <div class="cta-box">
+      <h2>Попробуйте API прямо сейчас</h2>
+      <p>Откройте интерактивную документацию Swagger — нажмите Try it out на любом endpoint и получите живые данные</p>
+      <a href="/docs" class="btn btn-primary" style="font-size:16px;padding:14px 32px">Открыть Swagger Docs →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Tender Platform © 2026 • <a href="/docs">API Docs</a> • <a href="https://github.com/Star-Bound-Studio/tender-platform">GitHub</a></p>
+</footer>
+
+<script>
+const API = '';
+const srcColors = {eis:'#3b82f6',rts:'#22c55e',sber:'#f59e0b',rosneft:'#a855f7',gazprom:'#8b5cf6',lukoil:'#7c3aed',vsem_podryad:'#ec4899'};
+
+function formatPrice(n){
+  if(!n)return'Не указана';
+  n=parseFloat(n);
+  if(n>=1e9)return(n/1e9).toFixed(1)+' млрд ₽';
+  if(n>=1e6)return(n/1e6).toFixed(0)+' млн ₽';
+  if(n>=1e3)return(n/1e3).toFixed(0)+' тыс ₽';
+  return n+'₽';
+}
+
+async function loadStats(){
+  try{
+    const [t,c,s,r]=await Promise.all([
+      fetch(API+'/api/v1/tenders').then(r=>r.json()),
+      fetch(API+'/api/v1/companies').then(r=>r.json()),
+      fetch(API+'/api/v1/sources').then(r=>r.json()),
+      fetch(API+'/api/v1/requests').then(r=>r.json()),
+    ]);
+    document.getElementById('s-tenders').textContent=t.total||0;
+    document.getElementById('s-companies').textContent=c.total||0;
+    document.getElementById('s-sources').textContent=s.length||0;
+    document.getElementById('s-requests').textContent=r.total||0;
+
+    // Source list in stats panel
+    const sl=document.getElementById('source-list');
+    sl.innerHTML='';
+    const counts=t.source_counts||{};
+    s.forEach(src=>{
+      sl.innerHTML+=`<div class="source-row"><div class="name"><div class="dot" style="background:${src.color}"></div>${src.short_name}</div><div class="count">${counts[src.id]||0}</div></div>`;
+    });
+  }catch(e){console.error('Stats:',e)}
+}
+
+async function loadTenders(){
+  try{
+    const d=await fetch(API+'/api/v1/tenders?per_page=6').then(r=>r.json());
+    const el=document.getElementById('tender-cards');
+    el.innerHTML='';
+    (d.items||[]).forEach(t=>{
+      const color=srcColors[t.source_id]||'#666';
+      el.innerHTML+=`
+      <div class="tender-card">
+        <div class="tender-header">
+          <div class="tender-num">${t.source_number}</div>
+          <div class="tender-src" style="background:${color}">${t.source_name||t.source_id}</div>
+        </div>
+        <div class="tender-title">${t.title}</div>
+        <div class="tender-customer">${t.customer_name||''}</div>
+        <div class="tender-footer">
+          <div class="tender-meta"><div class="tender-meta-label">НМЦ</div><div class="tender-meta-value">${formatPrice(t.nmck)}</div></div>
+          <div class="tender-meta"><div class="tender-meta-label">Регион</div><div class="tender-meta-value">${t.region||'—'}</div></div>
+          <div class="tender-meta"><div class="tender-meta-label">Тип</div><div class="tender-meta-value">${t.law_type||''}</div></div>
+        </div>
+      </div>`;
+    });
+  }catch(e){console.error('Tenders:',e)}
+}
+
+async function loadCompanies(){
+  try{
+    const d=await fetch(API+'/api/v1/companies?per_page=6').then(r=>r.json());
+    const el=document.getElementById('company-cards');
+    el.innerHTML='';
+    (d.items||[]).forEach(c=>{
+      el.innerHTML+=`
+      <div class="company-card">
+        <div class="company-name">${c.full_name}${c.has_sro?'<span class="sro-badge">СРО</span>':''}</div>
+        <div class="company-okved">ОКВЭД: ${c.primary_okved||'—'} • ${c.region||''}</div>
+        <div class="company-stats">
+          <div class="company-stat"><div class="company-stat-val">${c.tender_wins_count||0}</div><div class="company-stat-lbl">Тендеров</div></div>
+          <div class="company-stat"><div class="company-stat-val">${c.inn}</div><div class="company-stat-lbl">ИНН</div></div>
+        </div>
+      </div>`;
+    });
+  }catch(e){console.error('Companies:',e)}
+}
+
+async function loadSources(){
+  try{
+    const s=await fetch(API+'/api/v1/sources').then(r=>r.json());
+    const el=document.getElementById('sources-grid');
+    el.innerHTML='';
+    s.forEach(src=>{
+      el.innerHTML+=`
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:left">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <div style="width:12px;height:12px;border-radius:50%;background:${src.color}"></div>
+          <div style="font-weight:700;font-size:14px">${src.short_name}</div>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px">${src.name}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:10px">
+          <div style="width:6px;height:6px;border-radius:50%;background:${src.is_active?'var(--green)':'var(--red)'}"></div>
+          <span style="font-size:11px;color:${src.is_active?'var(--green)':'var(--red)'};">${src.is_active?'Активен':'Отключен'}</span>
+        </div>
+      </div>`;
+    });
+  }catch(e){console.error('Sources:',e)}
+}
+
+// Load all data
+loadStats();loadTenders();loadCompanies();loadSources();
+</script>
+</body>
+</html>
